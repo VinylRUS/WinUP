@@ -1,0 +1,32 @@
+From 8349d76b84ebd6fa8418484c52549340de2f2d2b Mon Sep 17 00:00:00 2001
+From: WinUP PR <winup-pr@users.noreply.github.com>
+Date: Sat, 24 Oct 2026 16:32:27 +0000
+Subject: [PATCH 3/6] =?UTF-8?q?chore:=20=D1=83=D0=B1=D1=80=D0=B0=D1=82?=
+ =?UTF-8?q?=D1=8C=20=D0=BF=D1=83=D1=81=D1=82=D0=BE=D0=B9=20=D1=86=D0=B8?=
+ =?UTF-8?q?=D0=BA=D0=BB=20foreach=20($b=20in=20$script:tiles)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Мёртвый код: цикл ничего не делает, рядом с ним только комментарий
+«плитки уже с обработчиками» — обработчики реально вешаются при создании
+кнопок-плиток.
+---
+ 0.1.0/windows-setup/system/win11-setup.ps1 | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/0.1.0/windows-setup/system/win11-setup.ps1 b/0.1.0/windows-setup/system/win11-setup.ps1
+index 23f68ce..4062712 100644
+--- a/0.1.0/windows-setup/system/win11-setup.ps1
++++ b/0.1.0/windows-setup/system/win11-setup.ps1
+@@ -2045,7 +2045,6 @@ function Update-Preview {
+     $prev.Text = "Сейчас произойдёт:`r`n`r`n" + ($steps -join "`r`n")
+ }
+ 
+-foreach ($b in $script:tiles) { } # плитки уже с обработчиками
+ $chk.Add_CheckedChanged({ Update-Checks; Update-Preview })
+ $chkOptimize.Add_CheckedChanged({ Update-Preview })
+ $chkClient.Add_CheckedChanged({ Update-Preview })
+-- 
+2.47.3
+

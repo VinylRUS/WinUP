@@ -1,0 +1,35 @@
+From 9735e805b1f8a6d247728303a5ff85fc75f3780d Mon Sep 17 00:00:00 2001
+From: WinUP PR <winup-pr@users.noreply.github.com>
+Date: Sat, 24 Oct 2026 16:32:27 +0000
+Subject: [PATCH 4/6] =?UTF-8?q?fix:=20winget=20uninstall=20=D0=BD=D0=B5=20?=
+ =?UTF-8?q?=D0=B4=D0=BE=D0=BB=D0=B6=D0=B5=D0=BD=20=D1=81=D0=BE=D0=BE=D0=B1?=
+ =?UTF-8?q?=D1=89=D0=B0=D1=82=D1=8C=20=D1=83=D1=81=D0=BF=D0=B5=D1=85,=20?=
+ =?UTF-8?q?=D0=B5=D1=81=D0=BB=D0=B8=20=D1=83=D0=B4=D0=B0=D0=BB=D0=B5=D0=BD?=
+ =?UTF-8?q?=D0=B8=D0=B5=20=D0=BD=D0=B5=20=D0=B7=D0=B0=D0=BF=D1=83=D1=81?=
+ =?UTF-8?q?=D1=82=D0=B8=D0=BB=D0=BE=D1=81=D1=8C?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+В Uninstall-WingetApp при сбое запуска процесса $code оставалась $null,
+а каст [int]$null даёт 0 — и функция сообщала «удалён», хотя удаление
+даже не стартовало. Теперь это отдельная проверка и FAIL.
+---
+ 0.1.0/windows-setup/system/win11-setup.ps1 | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/0.1.0/windows-setup/system/win11-setup.ps1 b/0.1.0/windows-setup/system/win11-setup.ps1
+index 4062712..59619db 100644
+--- a/0.1.0/windows-setup/system/win11-setup.ps1
++++ b/0.1.0/windows-setup/system/win11-setup.ps1
+@@ -649,6 +649,7 @@ function Uninstall-WingetApp([string]$Id, [string]$Name) {
+         $code = Wait-Task (Start-ProcessTask $Name "$Name — удаляется" $script:WingetExe @(
+             'uninstall', '--id', $Id, '-e', '--silent', '--disable-interactivity', '--accept-source-agreements') $out)
+     } catch { Write-Log "winget uninstall ${Id}: $($_.Exception.Message)" }
++    if ($null -eq $code) { Report FAIL "$Name — не удалён" 'удаление не запустилось; подробности в логе'; return }
+     $code = [int]$code   # без каста форматирование «0x{0:X8}» падает, если код пустой
+     Write-Log "winget uninstall $Id -> $code"
+     if ($code -eq 0) { Report OK "$Name — удалён" }
+-- 
+2.47.3
+
