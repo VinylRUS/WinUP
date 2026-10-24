@@ -1,0 +1,60 @@
+From 8e2905c6835fbc884ff49d96fdfc26c4be281b4c Mon Sep 17 00:00:00 2001
+From: WinUP PR <winup-pr@users.noreply.github.com>
+Date: Sat, 24 Oct 2026 16:32:27 +0000
+Subject: [PATCH 5/6] =?UTF-8?q?fix:=20=D0=BB=D0=B0=D1=83=D0=BD=D1=87=D0=B5?=
+ =?UTF-8?q?=D1=80=D1=8B=20=E2=80=94=20=D0=BE=D0=BA=D0=BD=D0=BE=20=D1=81=20?=
+ =?UTF-8?q?=D0=BE=D1=88=D0=B8=D0=B1=D0=BA=D0=BE=D0=B9,=20=D0=B5=D1=81?=
+ =?UTF-8?q?=D0=BB=D0=B8=20=D1=81=D0=BA=D1=80=D0=B8=D0=BF=D1=82=20=D0=BD?=
+ =?UTF-8?q?=D0=B5=20=D1=83=D0=B4=D0=B0=D0=BB=D0=BE=D1=81=D1=8C=20=D0=B7?=
+ =?UTF-8?q?=D0=B0=D0=BF=D1=83=D1=81=D1=82=D0=B8=D1=82=D1=8C?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+При $ErrorActionPreference = 'SilentlyContinue' неудачный Start-Process
+молча завершал exe: пользователь кликает — и ничего не происходит.
+Теперь ошибка показывается в окне (как и отсутствие win11-setup.ps1).
+---
+ 0.1.0/windows-setup/system/launcher-setup.ps1    | 10 +++++++++-
+ 0.1.0/windows-setup/system/launcher-transfer.ps1 | 10 +++++++++-
+ 2 files changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/0.1.0/windows-setup/system/launcher-setup.ps1 b/0.1.0/windows-setup/system/launcher-setup.ps1
+index a7748e0..855cafe 100644
+--- a/0.1.0/windows-setup/system/launcher-setup.ps1
++++ b/0.1.0/windows-setup/system/launcher-setup.ps1
+@@ -22,4 +22,12 @@ if (-not (Test-Path $ps1)) {
+ }
+ 
+ # Запускаем настройку. .exe уже с админ-правами (манифест), powershell их наследует.
+-Start-Process powershell.exe -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', "`"$ps1`""
++try {
++    Start-Process powershell.exe -ErrorAction Stop -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', "`"$ps1`""
++} catch {
++    Add-Type -AssemblyName System.Windows.Forms
++    [System.Windows.Forms.MessageBox]::Show(
++        "Не удалось запустить:`n$ps1`n`n$($_.Exception.Message)",
++        'Настройка ПК', 'OK', 'Error') | Out-Null
++    exit 1
++}
+diff --git a/0.1.0/windows-setup/system/launcher-transfer.ps1 b/0.1.0/windows-setup/system/launcher-transfer.ps1
+index e8d146b..b86c237 100644
+--- a/0.1.0/windows-setup/system/launcher-transfer.ps1
++++ b/0.1.0/windows-setup/system/launcher-transfer.ps1
+@@ -19,4 +19,12 @@ if (-not (Test-Path $ps1)) {
+     exit 1
+ }
+ 
+-Start-Process powershell.exe -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', "`"$ps1`""
++try {
++    Start-Process powershell.exe -ErrorAction Stop -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', "`"$ps1`""
++} catch {
++    Add-Type -AssemblyName System.Windows.Forms
++    [System.Windows.Forms.MessageBox]::Show(
++        "Не удалось запустить:`n$ps1`n`n$($_.Exception.Message)",
++        'Перенос данных', 'OK', 'Error') | Out-Null
++    exit 1
++}
+-- 
+2.47.3
+
